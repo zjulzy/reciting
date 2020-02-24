@@ -1,12 +1,3 @@
-'''
-@Author: your name
-@Date: 2020-02-23 10:42:16
-@LastEditTime: 2020-02-24 16:23:50
-@LastEditors: Please set LastEditors
-@Description: In User Settings Edit
-@FilePath: \单词库\reciting\sql.py
-'''
-
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 

@@ -1,22 +1,13 @@
-
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-
-"""
-Py40 PyQt5 tutorial 
- 
-This program creates a statusbar.
- 
-author: Jan Bodnar
-website: py40.com 
-last edited: January 2015
-"""
 
 import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QHBoxLayout, QVBoxLayout,QPushButton, QTextEdit, QGridLayout, QApplication)
 from PyQt5.QtGui import QIcon
+import baiduapi as api
+import sql
 
 
 class Example(QMainWindow):
@@ -31,14 +22,14 @@ class Example(QMainWindow):
         self.statusBar().showMessage('Ready')
 
         add_title = QLabel("添加新词")
-        add_text = QLineEdit()
+        self.add_text = QLineEdit()
         add_button = QPushButton("添加")
         translate_title = QLabel("词语解释")
         translate_button = QPushButton("翻译")
-        translate_text = QTextEdit()
+        self.translate_text = QTextEdit()
         random_button = QPushButton("随机")
-        random_word = QLineEdit()
-        random_translation = QTextEdit()
+        self.random_word = QLineEdit()
+        self.random_translation = QTextEdit()
         random_title = QLabel("随机单词")
         random_title2 = QLabel("单词释义")
         random_translate=QPushButton("翻译")
@@ -68,12 +59,27 @@ class Example(QMainWindow):
         widget = QWidget()
         widget.setLayout(vbox)
         self.setCentralWidget(widget)
-
+        #绑定信号槽
+        add_button.clicked.connect(self.add_keyevent)
+        translate_button.clicked.connect(self.translate_keyevent)
+        random_button.clicked.connect(self.random_keyevent)
+        #全局界面设置
         self.setGeometry(300, 300, 600, 500)
         self.setWindowTitle('Statusbar')
         self.setWindowIcon(QIcon('web.jpg'))
         self.show()
-
+        self.translator = api.apiManager('https://fanyi-api.baidu.com/api/trans/vip/translate','zh','20200221000386655','PwhheHAurn68ljo4NukF')
+        self.mysql = sql.mySQLManager("127.0.0.1","root","60018977a","word")
+    def translate_keyevent(self):
+        t = self.translator.translate(self.add_text.text())
+        self.translate_text.setText(t)
+    def add_keyevent(self):
+        self.mysql.add_word(self.add_text.text(),self.translate_text.Text())
+    def random_keyevent(self):
+        ran = random.randint(0, 100)
+        word , translate = self.mysql.random(ran)
+        self.random_word.setText(word)
+        self.random_translation(translate) 
 
 
 
