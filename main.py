@@ -4,10 +4,12 @@
 
 import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication
-from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QHBoxLayout, QVBoxLayout,QPushButton, QTextEdit, QGridLayout, QApplication)
+from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit,QMessageBox,QHBoxLayout, QVBoxLayout,QPushButton, QTextEdit, QGridLayout, QApplication)
 from PyQt5.QtGui import QIcon
+from PyQt5 import QtGui,QtCore
 import baiduapi as api
 import sql
+import random
 
 
 class Example(QMainWindow):
@@ -38,18 +40,18 @@ class Example(QMainWindow):
         #左部面板布局
         add_panel.setSpacing(10)
         add_panel.addWidget(add_title,1,0)
-        add_panel.addWidget(add_text,1,1)
+        add_panel.addWidget(self.add_text,1,1)
         add_panel.addWidget(translate_title,2,0)
-        add_panel.addWidget(translate_text,2,1,5,1)
+        add_panel.addWidget(self.translate_text,2,1,5,1)
         add_panel.addWidget(translate_button,7,0)
         add_panel.addWidget(add_button,7,1)
         #右部面板布局
         random_panel.setSpacing(10)
         random_panel.addWidget(random_button,1,2)
         random_panel.addWidget(random_title,2,0)
-        random_panel.addWidget(random_word,2,1,1,2)
+        random_panel.addWidget(self.random_word,2,1,1,2)
         random_panel.addWidget(random_title2,3,0)
-        random_panel.addWidget(random_translation,3,1,5,2)
+        random_panel.addWidget(self.random_translation,3,1,5,2)
         random_panel.addWidget(random_translate,8,1)
         
         #全局布局
@@ -61,6 +63,7 @@ class Example(QMainWindow):
         self.setCentralWidget(widget)
         #绑定信号槽
         add_button.clicked.connect(self.add_keyevent)
+        random_translate.clicked.connect(self.random_translate)
         translate_button.clicked.connect(self.translate_keyevent)
         random_button.clicked.connect(self.random_keyevent)
         #全局界面设置
@@ -68,18 +71,46 @@ class Example(QMainWindow):
         self.setWindowTitle('Statusbar')
         self.setWindowIcon(QIcon('web.jpg'))
         self.show()
+
+        # 个人信息设置
         self.translator = api.apiManager('https://fanyi-api.baidu.com/api/trans/vip/translate','zh','20200221000386655','PwhheHAurn68ljo4NukF')
-        self.mysql = sql.mySQLManager("127.0.0.1","root","60018977a","word")
+        self.mysql = sql.mySQLManager("127.0.0.1","root","60018977a","NEWWORD")
+
     def translate_keyevent(self):
         t = self.translator.translate(self.add_text.text())
         self.translate_text.setText(t)
+
     def add_keyevent(self):
-        self.mysql.add_word(self.add_text.text(),self.translate_text.Text())
+        flag = self.mysql.add_word(self.add_text.text(),self.translate_text.toPlainText())
+        if flag:
+            msgBox = QMessageBox.about(self, u'提示', u"添加成功")
+            msgBox.setWindowFlags(QtCore.Qt.CustomizeWindowHint)
+            msgBox.exec_() #模态对话框
+
     def random_keyevent(self):
-        ran = random.randint(0, 100)
-        word , translate = self.mysql.random(ran)
+        word = self.mysql.ran()
         self.random_word.setText(word)
-        self.random_translation(translate) 
+
+    def random_translate(self):
+        t = self.mysql.fetch(self.random_word.text())
+        self.random_translation.setText(t)
+
+    def closeEvent(self, event):
+        """
+        重写closeEvent方法，实现dialog窗体关闭时执行一些代码
+        :param event: close()触发的事件
+        :return: None
+        """
+        reply = QMessageBox.question(self,
+                                               '本程序',
+                                               "是否要退出程序？",
+                                               QMessageBox.Yes | QMessageBox.No,
+                                               QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.mysql.close()
+            event.accept()
+        else:
+            event.ignore()
 
 
 
