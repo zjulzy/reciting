@@ -35,6 +35,7 @@ class Example(QMainWindow):
         random_title = QLabel("随机单词")
         random_title2 = QLabel("单词释义")
         random_translate=QPushButton("翻译")
+        delete_button = QPushButton("删除")
         add_panel = QGridLayout()
         random_panel = QGridLayout()
         #左部面板布局
@@ -53,6 +54,7 @@ class Example(QMainWindow):
         random_panel.addWidget(random_title2,3,0)
         random_panel.addWidget(self.random_translation,3,1,5,2)
         random_panel.addWidget(random_translate,8,1)
+        random_panel.addWidget(delete_button,8,2)
         
         #全局布局
         vbox = QHBoxLayout(self)
@@ -66,6 +68,7 @@ class Example(QMainWindow):
         random_translate.clicked.connect(self.random_translate)
         translate_button.clicked.connect(self.translate_keyevent)
         random_button.clicked.connect(self.random_keyevent)
+        delete_button.clicked.connect(self.delete)
         #全局界面设置
         self.setGeometry(300, 300, 600, 500)
         self.setWindowTitle('Statusbar')
@@ -84,8 +87,6 @@ class Example(QMainWindow):
         flag = self.mysql.add_word(self.add_text.text(),self.translate_text.toPlainText())
         if flag:
             msgBox = QMessageBox.about(self, u'提示', u"添加成功")
-            msgBox.setWindowFlags(QtCore.Qt.CustomizeWindowHint)
-            msgBox.exec_() #模态对话框
 
     def random_keyevent(self):
         word = self.mysql.ran()
@@ -94,6 +95,15 @@ class Example(QMainWindow):
     def random_translate(self):
         t = self.mysql.fetch(self.random_word.text())
         self.random_translation.setText(t)
+
+    # 删除熟悉词汇功能
+    def delete(self):
+        if self.random_word.text()=="":
+            return 
+        else:
+            self.mysql.deleteWord(self.random_word.text())
+            msgBox = QMessageBox.about(self, u'提示', u"删除成功")
+
 
     def closeEvent(self, event):
         """

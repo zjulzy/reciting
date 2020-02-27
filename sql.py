@@ -60,5 +60,10 @@ class mySQLManager:
         print(result)
         return result[0][1]
 
+    def deleteWord(self,word):
+        sql="delete from word_list where word ='%s'"%(word)
+        self.cursor.execute(sql)
+        self.db.commit()
+
     def close(self):
         self.cursor.close()
